@@ -10,7 +10,7 @@ def require_not_empty_str(value: str, field_name: str) -> None:
 
 @dataclass(frozen=True)
 class MediaItem:
-    id: str
+    item_id: str
     name: str
     category: str
     year: int
@@ -18,10 +18,15 @@ class MediaItem:
     creator: str
 
     def __post_init__(self) -> None:
-        require_not_empty_str(self.id, "id")
+        require_not_empty_str(self.item_id, "id")
         require_not_empty_str(self.name, "name")
         require_not_empty_str(self.category, "category")
         require_not_empty_str(self.creator, "creator")
+
+        object.__setattr__(self, "item_id", self.item_id.strip())
+        object.__setattr__(self, "name", self.name.strip())
+        object.__setattr__(self, "category", self.category.strip())
+        object.__setattr__(self, "creator", self.creator.strip())
 
         if (
             not isinstance(self.year, int)
