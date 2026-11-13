@@ -1,7 +1,9 @@
 from typing import Iterator
+from pathlib import Path
 
 from .models import MediaItem
 from .errors import DuplicateIdError, ObjectNotFoundError, InvalidEntityError
+from .storage import save_catalog, load_catalog
 
 
 class Catalog:
@@ -64,3 +66,17 @@ class Catalog:
 
     def __contains__(self, item_id: str) -> bool:
         return item_id.strip() in self._items
+
+    def save(self, path: str | Path) -> None:
+        save_catalog(self, path)
+
+    def load(self, path: str | Path) -> None:
+        items = load_catalog(path)
+        duplicated_item_ids = [item.item_id for item in items if item.item_id in self]
+
+        if duplicated_item_ids:
+            raise DuplicateIdError(
+                f"элементы со следующими ID уже имеются в каталоге: {duplicated_item_ids}"
+            )
+        for item in items:
+            self._items[item.item_id] = item
