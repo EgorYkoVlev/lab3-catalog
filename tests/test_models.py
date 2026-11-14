@@ -5,16 +5,24 @@ from mediacatalog.errors import InvalidEntityError
 from mediacatalog.models import MediaItem
 
 
-def test_create_media_item():
-    item = MediaItem(
-        id="11324",
+def make_item(**overrides) -> MediaItem:
+    """Создание объекта на основе шаблона"""
+    data = dict(
+        item_id="11324",
         name="Титаник",
         category="Фильм",
         year=1997,
         duration_minutes=194,
         creator="Джеймс Кэмерон",
     )
-    assert item.id == "11324"
+    data.update(overrides)
+    return MediaItem(**data)
+
+
+def test_create_media_item():
+    item = make_item()
+
+    assert item.item_id == "11324"
     assert item.name == "Титаник"
     assert item.category == "Фильм"
     assert item.year == 1997
@@ -23,97 +31,24 @@ def test_create_media_item():
 
 
 def test_update_media_item():
-    item = MediaItem(
-        id="11324",
-        name="Титаник",
-        category="Фильм",
-        year=1997,
-        duration_minutes=194,
-        creator="Джеймс Кэмерон",
-    )
+    item = make_item()
+
     with pytest.raises(FrozenInstanceError):
         item.name = "Британик"
 
 
-def test_empty_field_id():
+@pytest.mark.parametrize(
+    "field, bad_value",
+    [
+        ("item_id", ""),
+        ("name", " "),
+        ("category", 67.43),
+        ("year", 2070),
+        ("duration_minutes", -3),
+        ("duration_minutes", True),
+        ("creator", True),
+    ],
+)
+def test_invalid_fields_rejected(field, bad_value):
     with pytest.raises(InvalidEntityError):
-        MediaItem(
-            id="",
-            name="Титаник",
-            category="Фильм",
-            year=1997,
-            duration_minutes=194,
-            creator="Джеймс Кэмерон",
-        )
-
-
-def test_empty_field_name():
-    with pytest.raises(InvalidEntityError):
-        MediaItem(
-            id="11324",
-            name="  ",
-            category="Фильм",
-            year=1997,
-            duration_minutes=194,
-            creator="Джеймс Кэмерон",
-        )
-
-
-def test_invalid_field_type_category():
-    with pytest.raises(InvalidEntityError):
-        MediaItem(
-            id="11324",
-            name="Титаник",
-            category=67.43,
-            year=1997,
-            duration_minutes=194,
-            creator="Джеймс Кэмерон",
-        )
-
-
-def test_field_year_out_of_range():
-    with pytest.raises(InvalidEntityError):
-        MediaItem(
-            id="11324",
-            name="Титаник",
-            category="Фильм",
-            year=2070,
-            duration_minutes=194,
-            creator="Джеймс Кэмерон",
-        )
-
-
-def test_feld_duration_minutes_less_than_zero():
-    with pytest.raises(InvalidEntityError):
-        MediaItem(
-            id="11324",
-            name="Титаник",
-            category="Фильм",
-            year=2026,
-            duration_minutes=-3,
-            creator="Джеймс Кэмерон",
-        )
-
-
-def test_feld_duration_minutes_is_bool():
-    with pytest.raises(InvalidEntityError):
-        MediaItem(
-            id="11324",
-            name="Титаник",
-            category="Фильм",
-            year=2026,
-            duration_minutes=True,
-            creator="Джеймс Кэмерон",
-        )
-
-
-def test_invalid_field_type_creator():
-    with pytest.raises(InvalidEntityError):
-        MediaItem(
-            id="11324",
-            name="Титаник",
-            category="Фильм",
-            year=2026,
-            duration_minutes=194,
-            creator=True,
-        )
+        make_item(**{field: bad_value})

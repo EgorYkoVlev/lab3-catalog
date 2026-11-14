@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 .idea/
 .ruff_cache/
+demo_catalog.json
+*.egg-info/
+build/
+dist/

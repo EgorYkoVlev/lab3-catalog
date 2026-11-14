@@ -20,7 +20,7 @@ class Catalog:
         self._items[item.item_id] = item
 
     def get(self, item_id: str) -> MediaItem:
-        if not isinstance(item_id, str):
+        if not isinstance(item_id, str) or not item_id.strip():
             raise InvalidEntityError("поле ID - это непустая строка")
 
         prepared_item_id = item_id.strip()
@@ -32,7 +32,7 @@ class Catalog:
             ) from err
 
     def remove(self, item_id: str) -> MediaItem:
-        if not isinstance(item_id, str):
+        if not isinstance(item_id, str) or not item_id.strip():
             raise InvalidEntityError("поле ID - это непустая строка")
 
         prepared_item_id = item_id.strip()
@@ -44,18 +44,18 @@ class Catalog:
             ) from err
 
     def find_by_category(self, category: str) -> list[MediaItem]:
-        if not isinstance(category, str):
+        if not isinstance(category, str) or not category.strip():
             raise InvalidEntityError("поле category - это непустая строка")
+
         prepared_category = category.strip().lower()
-        return [
-            item for item in self if item.category.strip().lower() == prepared_category
-        ]
+        return [item for item in self if item.category.lower() == prepared_category]
 
     def find_by_name(self, name: str) -> list[MediaItem]:
-        if not isinstance(name, str):
+        if not isinstance(name, str) or not name.strip():
             raise InvalidEntityError("поле name - это непустая строка")
+
         prepared_name = name.strip().lower()
-        return [item for item in self if item.name.strip().lower() == prepared_name]
+        return [item for item in self if item.name.lower() == prepared_name]
 
     def __len__(self) -> int:
         return len(self._items)
@@ -65,7 +65,7 @@ class Catalog:
             yield self._items[item_id]
 
     def __contains__(self, item_id: str) -> bool:
-        return item_id.strip() in self._items
+        return isinstance(item_id, str) and item_id.strip() in self._items
 
     def save(self, path: str | Path) -> None:
         save_catalog(self, path)
